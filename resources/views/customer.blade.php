@@ -21,11 +21,16 @@
                 <div class="card-header">{{ __('Customer') }}</div>
 
                 <div class="card-body">
-                    <div style="float:right">
+                    <div>
                         <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#customerform">
-                            New Customer
-                        </button>
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#customerform" style="float:right">
+                                    New Customer
+                                </button>
+                            </div>
+                        </div>
+                       
                         
                         <!-- Modal -->
                         <div class="modal fade" id="customerform" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -56,8 +61,8 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col">
+                        <div class="row pt-5">
+                            <div class="col-md-12">
                                 <table id= "customertable">
                                     <thead>
                                         <th>ID</th>
