@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\customer;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use PHPUnit\Util\Json;
+
 
 class CustomerController extends Controller
 {
@@ -86,7 +88,7 @@ class CustomerController extends Controller
     {
         //
         $customer->update($this->validate($request, [
-            'name' => ['required', 'max:255', 'unique:customers'],
+            'name' => ['required', 'max:255', Rule::unique('customers')->ignore($customer)],
             'contact_no' => ['required', 'max:255']
         ]));
         return $customer;
