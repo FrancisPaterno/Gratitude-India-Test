@@ -2,16 +2,14 @@
 
 @section('head')
 <meta name="csrf-token" content="{{ csrf_token() }}">
-  
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />  
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>  
-      
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+<link href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css" rel="stylesheet" >
+<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js" integrity="sha384-q2kxQ16AaE6UbzuKqyBE9/u/KzioAlnx2maXQHiDX9d4/zp8Ok3f+M7DPm+Ib6IU" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.min.js" integrity="sha384-pQQkAEnwaBkjpqZ8RU1fF1AKtTcHJwFl3pblpTlHXybJjHpMYo79HY3hIi4NKxyj" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js" defer ></script>
+<script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js" defer></script>
 
-<script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js" defer></script>
-
- 
- <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
 
 @endsection
 
@@ -58,16 +56,19 @@
                             </div>
                         </div>
 
-                        <div >
-                            <table id="customertable" class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Customer name</th>
-                                        <th>Contact Number</th>
-                                    </tr>
-
-                                </thead>
-                            </table>
+                        <div class="row">
+                            <div class="col">
+                                <table id= "customertable">
+                                    <thead>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Contact No</th>
+                                        <th>Actions</th>
+                                    </thead>
+                                </table>
+                            </div>
+                        </div>
+                            
                         </div>
                     </div>
                 </div>
@@ -83,6 +84,7 @@
  
 <script>
     let api;
+    let isEdit = false;
     $(document).ready(function(){
         const baseapi = axios.create({ baseURL: "http://127.0.0.1:8000" });
          api = function(){
@@ -93,28 +95,91 @@
             }
             return baseapi;
         }
-       
-       getCustomers();
+        $('#customertable').DataTable({
+            ajax:{
+                url:'/customerapi',
+                type:'GET'
+            },
+            columns:[
+                {data:'id'},
+                {data:'name'},
+                {data:'contact_no'},
+                {data: 'id',responsivePriority:-1}
+            ],
+            columnDefs:[
+                {
+                    targets:-1,
+                    title:'Actions',
+                    orderable:false,
+                    render:function(data, type, full, meta){
+                        return '\
+                                <a href="javascript:editCustomer('+ data +');" class="btn btn-sm btn-clean btn-icon" title="Edit details">\
+                                Edit\
+                                </a>\
+                                <a href="javascript:deleteCustomer('+data+')" class="btn btn-sm btn-clean btn-icon" title="Delete" id="'+data+'">\
+                                Delete\
+                                </a>\
+                            ';
+                    }
+                   
+                }
+            ]
+        });
     });
 
-    async function getCustomers(){
-        const customers = await api().get('customerapi');
-        console.log(customers.data[0]);
-        $('#customertable').DataTable({
-            "processing": true,
-            "serverSide": true,
-            "ajax": customers,
-        });
-    }
+
    function saveCustomer(e){
         e.preventDefault();
         
        const form = document.getElementById('customer-form');
        let formdata = new FormData();
+       formdata.append('id', form.id.value)
        formdata.append('name', form.name.value)
        formdata.append('contact_no', form.contact_no.value)
+        if(!isEdit){
+            api().post('customer', formdata).then(
+                response=>{
+                    $('#customerform').modal('hide');
+                   var table =$('#customertable').DataTable();
+                   console.log('response add',response);
+                   table.row.add(response.data).draw();
+                }
+            )
+        }
+        else{
 
-       api().post('customer', formdata);
+            api().put(`customer/${formdata}`).then(
+                response=>{
+
+                }
+            );
+        }
+      
+   }
+
+   function editCustomer(data){
+       let editform = document.getElementById('customer-form');
+       api().get(`customer/${data}/edit`).then(
+           response=>{
+               console.log('response',response);
+               editform.id.value = response.data.id;
+               editform.name.value = response.data.name;
+               editform.contact_no.value = response.data.contact_no;
+               $('#customerform').modal('show');
+               isEdit = true;
+           }
+       );
+       
+       
+   }
+
+   function deleteCustomer(data){
+       const row = $(`#${data}`);
+       api().delete(`customer/${data}`).then(
+        response=>{
+            $('#customertable').DataTable().row(row.parents('tr')).remove().draw();
+        }
+       );
    }
 </script>
 @endsection

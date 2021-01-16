@@ -22,7 +22,7 @@ class CustomerController extends Controller
     public function getCustomers()
     {
         $customers = customer::all();
-        return $customers;
+        return json_encode(array('data' => $customers));
     }
     /**
      * Show the form for creating a new resource.
@@ -72,6 +72,7 @@ class CustomerController extends Controller
     public function edit(customer $customer)
     {
         //
+        return $customer;
     }
 
     /**
@@ -84,6 +85,11 @@ class CustomerController extends Controller
     public function update(Request $request, customer $customer)
     {
         //
+        $customer->update($this->validate($request, [
+            'name' => ['required', 'max:255', 'unique:customers'],
+            'contact_no' => ['required', 'max:255']
+        ]));
+        return $customer;
     }
 
     /**
@@ -95,5 +101,6 @@ class CustomerController extends Controller
     public function destroy(customer $customer)
     {
         //
+        $customer->delete();
     }
 }
