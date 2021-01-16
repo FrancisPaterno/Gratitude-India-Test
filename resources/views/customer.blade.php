@@ -148,24 +148,16 @@
         }
         else{
             let formEdit = document.getElementById('customer-form');
-            let formdataEdit = new FormData();
-            formdataEdit.append('id', formEdit.id.value)
-            formdataEdit.append('name', formEdit.name.value)
-            formdataEdit.append('contact_no', formEdit.contact_no.value)
-            console.log('formdataEdit',formdataEdit);
-            api().put(`customer/${formEdit.id.value}`,formEdit).then(
+            
+            const data = {id:formEdit.id.value, name:formEdit.name.value, contact_no:formEdit.contact_no.value}
+            console.log('data',data);
+            api().put(`customer/${formEdit.id.value}`,data).then(
                 response=>{
                     var table = $('#customertable').DataTable();
-                    table.rows().every( function () {
-                    var d = this.data();
- 
-                    d.counter++; // update data source for the row
- 
-                    this.invalidate(); // invalidate the data DataTables has cached for this row
-                    } );
- 
-                    // Draw once all updates are done
-                    table.draw();
+                    const row = $(`#${formEdit.id.value}`);
+                    $('#customertable').DataTable().row(row.parents('tr')).remove().draw();
+                    table.row.add(response.data).draw();
+                    $('#customerform').modal('hide');
                     isEdit = false;
                 }
             );

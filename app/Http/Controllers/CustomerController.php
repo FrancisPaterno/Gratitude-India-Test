@@ -86,7 +86,7 @@ class CustomerController extends Controller
      */
     public function update(Request $request, customer $customer)
     {
-        //
+
         $customer->update($this->validate($request, [
             'name' => ['required', 'max:255', Rule::unique('customers')->ignore($customer)],
             'contact_no' => ['required', 'max:255']
